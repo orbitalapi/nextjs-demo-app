@@ -1,91 +1,116 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import styles from './page.module.css'
+'use client';
 
-const inter = Inter({ subsets: ['latin'] })
+import { Inter } from 'next/font/google';
+import styles from './page.module.css';
+import { useEffect, useState } from 'react';
+import { HttpQueryClient } from '@orbitalhq/orbital-client';
+import { Observable } from 'rxjs';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
+
+  function loadData(): Observable<{
+    'id' : number,
+    'title' : string,
+    'provider' : string,
+    'cost' : number,
+    'reviewScore' : number,
+    'reviewText' : string
+  }> {
+    return new HttpQueryClient('http://localhost:9022').query(`import films.reviews.ReviewText
+import films.reviews.FilmReviewScore
+import films.StreamingProviderPrice
+import films.StreamingProviderName
+import film.types.Title
+import films.FilmId
+find { Film[] } as {
+    id: FilmId
+    title : Title
+
+    // where can I watch this?
+    provider: StreamingProviderName
+    cost: StreamingProviderPrice
+
+    // Is it any good?
+    reviewScore: FilmReviewScore
+    reviewText: ReviewText
+}[]`);
+  }
+
+
+  function xloadData(): Observable<{
+    id: string,
+    title: string,
+    provider: string,
+    cost: number,
+    reviewScore: number,
+    reviewText: string
+  }> {
+    return new HttpQueryClient(`http://localhost:9022`).query(`import films.reviews.ReviewText
+import films.reviews.FilmReviewScore
+import films.StreamingProviderPrice
+import films.StreamingProviderName
+import film.types.Title
+import films.FilmId
+find { Film[] } as {
+    id: FilmId
+    title : Title
+
+    // where can I watch this?
+    provider: StreamingProviderName
+    cost: StreamingProviderPrice
+
+    // Is it any good?
+    reviewScore: FilmReviewScore
+    reviewText: ReviewText
+}[]`);
+  }
+
+  const [films, setFilms] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadData().subscribe(result => {
+      setFilms(films.concat(result));
+    });
+  }, []);
+
+  const headerClass = `py-3.5 px-3 text-left text-sm font-semibold text-gray-900 `
+  const cellClass = `px-3 py-4 text-sm text-gray-500 text-ellipsis overflow-hidden`;
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+      <div className='mt-8 flow-root'>
+        <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+          <div className='inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8'>
+            <table className={`min-w-full divide-y divide-gray-300`}>
+              <thead className={'bg-gray-50'}>
+              <tr>
+                <th className={`headerClass`}>Film Id</th>
+                <th className={`headerClass`}>Film title</th>
+                <th className={`headerClass`}>Review Score</th>
+                <th className={`headerClass`}>Review</th>
+                <th className={`headerClass`}>Provider</th>
+                <th className={`headerClass`}>Cost</th>
+              </tr>
+
+              </thead>
+              <tbody className='divide-y divide-gray-200 bg-white'>
+
+              {films.map((film, idx) => {
+                return (<tr key={`row-${idx}`}>
+                  <td className={cellClass}>{film.id}</td>
+                  <td className={cellClass}>{film.title}</td>
+                  <td className={cellClass}>{film.reviewScore}</td>
+                  <td className={cellClass}>{film.reviewText}</td>
+                  <td className={cellClass}>{film.provider}</td>
+                  <td className={cellClass}>{film.cost}</td>
+                </tr>);
+              })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-        <div className={styles.thirteen}>
-          <Image src="/thirteen.svg" alt="13" width={40} height={31} priority />
-        </div>
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
       </div>
     </main>
-  )
+  );
 }
